@@ -1,48 +1,59 @@
-💳 The Payment Logic Lab | A "Mini-Redsys" Simulator
-🤔 Why did I build this?
-Have you ever wondered what actually happens in those few seconds after you hit the "Pay" button on a website? As someone aiming to dive into the Fintech world and Backend development, I didn't want to just use a library—I wanted to build the logic from scratch.
+# 💳 Payment Gateway Simulator (v2.0: With Persistence)
 
-This project is a simulation of the "brain" behind a payment processor. It handles the critical moment when a transaction is either welcomed with a green light or stopped at the gate.
+## 🤔 Why did I build this?
+Have you ever wondered what actually happens in those few seconds after you hit the "Pay" button on a website? As someone aiming to dive into the **Fintech** world and Backend development, I didn't want to just use a library—I wanted to build the logic from scratch.
 
-⚙️ How it works (The Business Logic)
-This isn't just a basic API that says "OK" to everything. I've programmed real-world constraints to mimic how actual banks operate:
+This project simulates the "brain" behind a payment processor, handling validation, logic, and storage.
 
-The Gatekeeper (Validation): Before even touching the "vault," the system checks if the data makes sense. If a card number isn't exactly 16 digits, we don't even bother the processor. This is handled by Pydantic for rock-solid data integrity.
+## 🚀 🆕 Update v2.0: The "Mid-Level" Upgrade
+I recently refactored the project to move from a basic script to a robust backend system.
+* **Real Persistence (SQL):** Integrated **SQLite** and **SQLAlchemy**. Transactions are now permanently saved in a database file (`payments.db`), meaning data survives server restarts (unlike the previous in-memory version).
+* **Security & Privacy (PCI-DSS principles):** Implemented **Data Masking**. The database *never* stores the full credit card number, only the last 4 digits (e.g., `4444`). This mimics real-world GDPR and security compliance.
+* **Audit Endpoint:** Added `GET /history` to query the persistent database.
 
-The Banker (Decision Logic): * ✅ Approved: If the card is valid and the amount is reasonable.
+## ⚙️ How it works (The Business Logic)
+I've programmed real-world constraints to mimic how actual banks operate:
 
-⛔ Insufficient Funds: Try to charge more than 1,000€, and the system will pull the handbrake.
+1.  **The Gatekeeper (Validation):** Before even touching the database, the system checks if the data makes sense using **Pydantic**.
+2.  **The Banker (Decision Logic):**
+    * ✅ **Approved:** Valid card + reasonable amount.
+    * ⛔ **Insufficient Funds:** Charges over **2,000€** are automatically rejected.
+3.  **The Vault (Storage):** If approved, the transaction is hashed and safely stored in the SQL database for future auditing.
 
-❌ Invalid Data: Clear error messages instead of cryptic crashes.
+## 🛠️ Tech Stack (The "Why")
+* **Python 3.10:** My core language.
+* **FastAPI:** Chosen for high performance and automatic documentation.
+* **SQLAlchemy ORM:** Used to manage database transactions professionally, avoiding raw SQL queries.
+* **SQLite:** A serverless SQL engine for local persistence.
+* **Pydantic:** For strict data validation.
 
-🛠️ Tech Stack (The "Why")
-Python 3.10: My language of choice for its readability and power.
+## 🚀 Take it for a spin
 
-FastAPI: I chose this over Flask because I wanted high performance and, honestly, because the automatic Swagger documentation is a lifesaver for testing.
+1.  **Clone the repo:**
+    ```bash
+    git clone [https://github.com/Anguis400/payment-gateway-api.git](https://github.com/Anguis400/payment-gateway-api.git)
+    cd payment-gateway-api
+    ```
 
-Pydantic: Essential for Fintech. When dealing with money, you can't afford to have a "string" where a number should be.
+2.  **Install dependencies (Updated):**
+    ```bash
+    pip install fastapi uvicorn sqlalchemy
+    ```
 
-Uvicorn: The lightning-fast ASGI server that keeps everything running.
+3.  **Fire up the engine:**
+    ```bash
+    uvicorn main:app --reload
+    ```
+    *Note: This will automatically generate the `payments.db` file in your folder.*
 
-🚀 Take it for a spin
-Want to try and "charge" yourself some virtual money?
+4.  **Interactive Testing:**
+    Go to `http://127.0.0.1:8000/docs`.
+    * Try `POST /process-payment` to make a transaction.
+    * Restart the server.
+    * Try `GET /history` to see that your data **survived**!
 
-Clone the repo:
+## 🧠 What I learned
+Building v2.0 taught me the importance of **Data Persistence**. It's easy to make a script work in RAM, but connecting an API to a SQL database via an ORM (Object Relational Mapper) is what makes an application "production-ready". Also, learning to hide sensitive data (Masking) made me realize how critical privacy is in Fintech.
 
-Bash
-git clone https://github.com/Anguis400/payment-gateway-api.git
-cd payment-gateway-api
-Install dependencies:
-
-Bash
-pip install fastapi uvicorn
-Fire up the engine:
-
-Bash
-uvicorn main:app --reload
-Interactive Testing: Head over to http://127.0.0.1:8000/docs. I've set up the Swagger UI so you can test POST requests directly from your browser without writing a single line of client-side code.
-
-🧠 What I learned
-Building this taught me that Backend development isn't just about moving data; it's about anticipating failure. Learning how to return the correct HTTP Status Codes (like 400 Bad Request vs. 402 Payment Required) is what separates a basic script from a professional API.
-
-Built with ⌨️ and a lot of curiosity by Anguis400.
+---
+*Built with ⌨️, code, and caffeine by **Anguis400**.*
